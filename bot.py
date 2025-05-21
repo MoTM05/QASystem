@@ -61,7 +61,7 @@ def initialize_llm():
     return llm
 
 
-def check_faiss_index_exists(path: str) -> bool:
+def check_faiss_index_exists(str):
     """Проверяет наличие файлов index.faiss и index.pkl в указанной директории."""
     index_file = os.path.join(path, "index.faiss")
     pkl_file = os.path.join(path, "index.pkl")
@@ -111,7 +111,7 @@ def initialize_qa_chain(force_rebuild_chain_only=False):
         return False
 
 
-def extract_text_from_file(file_path: str) -> str:
+def extract_text_from_file(str):
     """Извлечь текст из файла на основе его расширения"""
     try:
         if file_path.lower().endswith('.pdf'):
@@ -188,7 +188,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("\n".join(status_msg_parts))
 
 
-async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обрабатывает загруженный документ и добавляет его в FAISS индекс."""
     if not update.message.document:
         await update.message.reply_text("Пожалуйста, отправьте документ.")
@@ -297,7 +297,7 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logger.info(f"Временный файл удален: {temp_file_path}")
 
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обрабатывает текстовое сообщение как вопрос к QA системе."""
     global qa_system
     if not update.message or not update.message.text:
