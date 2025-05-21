@@ -13,14 +13,11 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
-# Настройка логгирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Инициализация FastAPI
 app = FastAPI(title="QA System API")
 
-# Настройка CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,7 +26,6 @@ app.add_middleware(
 )
 
 
-# Модели запросов
 class QuestionRequest(BaseModel):
     question: str
     document_id: Optional[str] = None
@@ -42,12 +38,10 @@ class DocumentResponse(BaseModel):
     status: str
 
 
-# Загрузка модели и базы знаний
 def initialize_qa_system():
     try:
         logger.info("Loading FAISS index...")
 
-        # Инициализация эмбеддингов
         embeddings = HuggingFaceEmbeddings(model_name="hkunlp/instructor-large")
 
         if not os.path.exists("faiss_AiDoc"):
@@ -61,7 +55,7 @@ def initialize_qa_system():
         )
 
         logger.info("Loading Llama-2 model...")
-        model_path = "llama-2-7b-chat.Q4_K_M.gguf"
+        model_path = "models/llama-2-7b-chat.Q4_K_M.gguf"
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file {model_path} not found")
 
@@ -92,7 +86,6 @@ except Exception as e:
     qa_system = None
 
 
-# API Endpoints
 @app.post("/ask", summary="Задать вопрос системе")
 async def ask_question(request: QuestionRequest):
     if not qa_system:
@@ -130,21 +123,17 @@ async def upload_document(file: UploadFile = File(...)):
 
         file_path = f"temp_{file.filename}"
         try:
-            # Сохраняем временный файл
             with open(file_path, "wb") as f:
                 f.write(await file.read())
 
-            # Извлекаем текст
             content = extract_text_from_file(file_path)
 
-            # Разбиваем на чанки
             text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=1200,
                 chunk_overlap=300
             )
             docs = text_splitter.split_text(content)
 
-            # Инициализируем или загружаем FAISS индекс
             embeddings = HuggingFaceEmbeddings(model_name="hkunlp/instructor-large")
 
             global qa_system
@@ -154,10 +143,8 @@ async def upload_document(file: UploadFile = File(...)):
             else:
                 db = FAISS.from_texts(docs, embeddings)
 
-            # Сохраняем индекс
             db.save_local("faiss_AiDoc")
 
-            # Инициализируем QA систему если она еще не инициализирована
             if qa_system is None:
                 model_path = "llama-2-7b-chat.Q4_K_M.gguf"
                 llm = LlamaCpp(
